@@ -1,5 +1,22 @@
 {
+    "name": "genercodeltd/genercodeclient",
+    "description": "Genercode Client to simplify communication with API",
+    "authors": [
+        {
+            "name": "Suzanne Clifford",
+            "email": "suzanne.clifford@presstojam.com"
+        }
+    ],
     "require": {
         "guzzlehttp/guzzle": "^7.5"
-    }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload" : {
+        "psr-4" : {
+            "GenerCodeClient\\" : "app/"
+        }
+    },
+    "license" : "Apache-2.0"
 }
