@@ -37,7 +37,6 @@ class HttpClient {
 
     protected function buildHeaders() {
         $headers=$this->custom_headers;
-        $headers["accept"] = 'application/json';
         if ($this->referer) {
             $headers["referer"] = $this->referer;
         }
@@ -95,6 +94,7 @@ class HttpClient {
     {
         $params = ["headers"=>$this->buildHeaders()];
         if ($data) $params["query"]=$data;
+        $params["headers"]["accept"] = 'application/json';
         $r = $this->http->request("GET", $this->base . $url, $params);
         $this->checkStatus($r);
         return $this->parseResponse($r);
@@ -104,6 +104,7 @@ class HttpClient {
     public function post($url, array $data)
     {
         $params = ["headers"=>$this->buildHeaders()];
+        $params["headers"]["accept"] = 'application/json';
         $params["form_params"]=$data;
         $r = $this->http->request("POST", $this->base . $url, $params);
         $this->checkStatus($r);
@@ -113,6 +114,7 @@ class HttpClient {
     public function put($url, array $data)
     {
         $params = ["headers"=>$this->buildHeaders()];
+        $params["headers"]["accept"] = 'application/json';
         $params["json"]=$data;
         $r = $this->http->request("PUT", $this->base . $url, $params);
         $this->checkStatus($r);
@@ -122,6 +124,7 @@ class HttpClient {
     public function delete($url, array $data)
     {
         $params = ["headers"=>$this->buildHeaders()];
+        $params["headers"]["accept"] = 'application/json';
         $params["json"]=$data;
         $r = $this->http->request("DELETE", $this->base . $url, $params);
         $this->checkStatus($r);
@@ -131,8 +134,16 @@ class HttpClient {
 
     public function pushAsset($url, $blob) {
         $params = ["headers"=>$this->buildHeaders()];
+        $params["headers"]["accept"] = 'application/json';
         $params["body"]=$blob;
         $r = $this->http->request("PATCH", $this->base . $url, $params);
+        $this->checkStatus($r);
+        return $this->parseResponse($r);
+    }
+
+    public function getAsset($url) {
+        $params = ["headers"=>$this->buildHeaders()];
+        $r = $this->http->request("GET", $this->base . $url, $params);
         $this->checkStatus($r);
         return $this->parseResponse($r);
     }
