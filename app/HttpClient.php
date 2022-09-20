@@ -40,6 +40,7 @@ class HttpClient {
         if ($this->referer) {
             $headers["referer"] = $this->referer;
         }
+        return $headers;
     }
 
 
