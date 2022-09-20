@@ -4,13 +4,12 @@ namespace GenerCodeClient;
 
 class HttpClient {
 
-    private $http;
-    private $jar;
-    private $headers;
-    private $debug = false;
-    private $custom_headers=[];
-    private $status_cbs=[];
-    private $referer;
+    protected $http;
+    protected $jar;
+    protected $headers;
+    protected $custom_headers=[];
+    protected $referer;
+    protected $base = "";
 
     function __construct($domain) {
         $this->jar = new \GuzzleHttp\Cookie\CookieJar;
@@ -27,49 +26,25 @@ class HttpClient {
     }
 
     function regHeader($header, $value) {
-        $this->custom_headers[$header] = $header . ": " . $value;
+        $this->custom_headers[$header] = $value;
     }
 
-    function regStatusCB($status, $cb) {
-        $this->status_cbs[$status] = $cb;
-    }
 
    
-    private function sendCookie() {
+    protected function refreshCookies() {
         $this->http->put("/core/switch-tokens");
     }
 
-
-    private function process($method, $url, $data = null, $body = null) {
-    
-        $params = [];
-
-        $headers=array('Accept: application/json');
-        $headers=[];
-        $headers = array_merge($headers, $this->custom_headers);
-        
+    protected function buildHeaders() {
+        $headers=$this->custom_headers;
+        $headers["accept"] = 'application/json';
         if ($this->referer) {
-            $headers["REFERER"] = $this->referer;
+            $headers["referer"] = $this->referer;
         }
+    }
 
-        $params["headers"] = $headers;
 
-        if ($data) {
-            if ($method == "GET") {
-                $params["query"] = $data;
-            } elseif ($method == "POST") {
-                $params["form_params"] = $data;
-            } else {
-                $params["json"] = $data;
-            }
-        }
-
-        if ($body) {
-            $params["body"] = $body;
-        }
-
-        $r = $this->http->request($method, $url, $params);
-        
+    protected function checkStatus($r) {
         if ($r->getStatusCode() == 403) {
             $r = $this->http->put("/core/switch-tokens");
             if ($r->getStatusCode() != 200) {
@@ -79,12 +54,17 @@ class HttpClient {
             if ($r->getStatusCode() != 200) {
                 throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase());
             }
+            throw new \Exception("API failure for " . $url . ": 403 Authorisation failed");
         } else if ($r->getStatusCode() == 401) {
             throw new \Exception("API failure for " . $url . ": 401 Authentication failed");
         } else if ($r->getStatusCode() != 200) {
             throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase());
         }
- 
+    }
+
+
+    protected function parseResponse($r) {
+    
         $body = $r->getBody();
 
         $content_type = $r->getHeader("Content-Type");
@@ -111,30 +91,49 @@ class HttpClient {
     }
 
 
-
     public function get($url, $data=null)
     {
-        return $this->process("GET", $url, $data);
+        $params = ["headers"=>$this->buildHeaders()];
+        if ($data) $params["query"]=$data;
+        $r = $this->http->request("GET", $this->base . $url, $params);
+        $this->checkStatus($r);
+        return $this->parseResponse($r);
     }
 
 
-    public function post($url, $data = [])
+    public function post($url, array $data)
     {
-        return $this->process("POST", $url, $data);
+        $params = ["headers"=>$this->buildHeaders()];
+        $params["form_params"]=$data;
+        $r = $this->http->request("POST", $this->base . $url, $params);
+        $this->checkStatus($r);
+        return $this->parseResponse($r);
     }
 
-    public function put($url, $data)
+    public function put($url, array $data)
     {
-        return $this->process("PUT", $url, $data);
+        $params = ["headers"=>$this->buildHeaders()];
+        $params["json"]=$data;
+        $r = $this->http->request("PUT", $this->base . $url, $params);
+        $this->checkStatus($r);
+        return $this->parseResponse($r);
     }
 
-    public function delete($url, $data)
+    public function delete($url, array $data)
     {
-        return $this->process("DELETE", $url, $data);
+        $params = ["headers"=>$this->buildHeaders()];
+        $params["json"]=$data;
+        $r = $this->http->request("DELETE", $this->base . $url, $params);
+        $this->checkStatus($r);
+        return $this->parseResponse($r);
     }
 
 
     public function pushAsset($url, $blob) {
-        return $this->process("PATCH", $url, null, $blob);
+        $params = ["headers"=>$this->buildHeaders()];
+        $params["body"]=$blob;
+        $r = $this->http->request("PATCH", $this->base . $url, $params);
+        $this->checkStatus($r);
+        return $this->parseResponse($r);
     }
 }
