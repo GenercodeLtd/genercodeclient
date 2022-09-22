@@ -58,7 +58,7 @@ class HttpClient {
         } else if ($r->getStatusCode() == 401) {
             throw new \Exception("API failure for " . $url . ": 401 Authentication failed");
         } else if ($r->getStatusCode() != 200) {
-            throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase());
+            throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase() . "\n" . $r->getBody()->getContents());
         }
     }
 
