@@ -12,7 +12,7 @@ class HttpClient {
     protected $base = "";
 
     function __construct($domain) {
-        $this->jar = new \GuzzleHttp\Cookie\CookieJar;
+        $this->jar = new \GuzzleHttp\Cookie\SessionCookieJar('PHPCOOKIES', true);
         $this->http = new \GuzzleHttp\Client(["base_uri"=>rtrim($domain, "/"), 'cookies' => $this->jar]);
     }
 
