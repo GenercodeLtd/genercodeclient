@@ -30,11 +30,6 @@ class HttpClient {
     }
 
 
-   
-    protected function refreshCookies() {
-        $this->http->put("/core/switch-tokens");
-    }
-
     protected function buildHeaders() {
         $headers=$this->custom_headers;
         if ($this->referer) {
@@ -45,18 +40,8 @@ class HttpClient {
 
 
     protected function checkStatus($r) {
-        if ($r->getStatusCode() == 403) {
-            $r = $this->http->put("/core/switch-tokens");
-            if ($r->getStatusCode() != 200) {
-                throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase());
-            }
-            $r = $this->http->request($method, $url, $params);
-            if ($r->getStatusCode() != 200) {
-                throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase());
-            }
-            throw new \Exception("API failure for " . $url . ": 403 Authorisation failed");
-        } else if ($r->getStatusCode() == 401) {
-            throw new \Exception("API failure for " . $url . ": 401 Authentication failed");
+        if ($r->getStatusCode() == 401 OR $r->getStatusCode() == 403) {
+            throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() ." Authentication failed");
         } else if ($r->getStatusCode() != 200) {
             throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase() . "\n" . $r->getBody()->getContents());
         }
@@ -66,7 +51,7 @@ class HttpClient {
     protected function parseResponse($r) {
     
         $body = $r->getBody();
-
+    
         $content_type = $r->getHeader("Content-Type");
 
         if (strpos($content_type[0], "json") !== false) {
