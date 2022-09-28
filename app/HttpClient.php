@@ -35,6 +35,7 @@ class HttpClient {
         if ($this->referer) {
             $headers["referer"] = $this->referer;
         }
+
         return $headers;
     }
 
@@ -43,7 +44,8 @@ class HttpClient {
         if ($r->getStatusCode() == 401 OR $r->getStatusCode() == 403) {
             throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() ." Authentication failed");
         } else if ($r->getStatusCode() != 200) {
-            throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase() . "\n" . $r->getBody()->getContents());
+            echo "Failure is " . $r->getBody()->getContents();
+            throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase() . $r->getBody()->getContents());
         }
     }
 
@@ -71,14 +73,14 @@ class HttpClient {
             }
             return $json;
         } else {
-            return (string) $body;
+            return $body->getContents();
         }
     }
 
 
     public function get($url, $data=null)
     {
-        $params = ["headers"=>$this->buildHeaders()];
+        $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         if ($data) $params["query"]=$data;
         $params["headers"]["accept"] = 'application/json';
         $r = $this->http->request("GET", $this->base . $url, $params);
@@ -89,7 +91,7 @@ class HttpClient {
 
     public function post($url, array $data)
     {
-        $params = ["headers"=>$this->buildHeaders()];
+        $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
         $params["form_params"]=$data;
         $r = $this->http->request("POST", $this->base . $url, $params);
@@ -99,7 +101,7 @@ class HttpClient {
 
     public function put($url, array $data)
     {
-        $params = ["headers"=>$this->buildHeaders()];
+        $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
         $params["json"]=$data;
         $r = $this->http->request("PUT", $this->base . $url, $params);
@@ -109,7 +111,7 @@ class HttpClient {
 
     public function delete($url, array $data)
     {
-        $params = ["headers"=>$this->buildHeaders()];
+        $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
         $params["json"]=$data;
         $r = $this->http->request("DELETE", $this->base . $url, $params);
@@ -119,7 +121,7 @@ class HttpClient {
 
 
     public function pushAsset($url, $blob) {
-        $params = ["headers"=>$this->buildHeaders()];
+        $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
         $params["body"]=$blob;
         $r = $this->http->request("PATCH", $this->base . $url, $params);
@@ -128,7 +130,7 @@ class HttpClient {
     }
 
     public function getAsset($url) {
-        $params = ["headers"=>$this->buildHeaders()];
+        $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $r = $this->http->request("GET", $this->base . $url, $params);
         $this->checkStatus($r);
         return $this->parseResponse($r);
