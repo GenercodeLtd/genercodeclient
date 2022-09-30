@@ -89,25 +89,33 @@ class HttpClient {
     }
 
 
-    public function post($url, array $data)
+    public function post($url, array $data, ?array $files = null)
     {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
         $params["form_params"]=$data;
+        if ($files) {
+            $params["multipart"] = $files;
+        }
         $r = $this->http->request("POST", $this->base . $url, $params);
         $this->checkStatus($r);
         return $this->parseResponse($r);
     }
 
+    
     public function put($url, array $data)
     {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
         $params["json"]=$data;
+        if ($files) {
+            $params["multipart"] = $files;
+        }
         $r = $this->http->request("PUT", $this->base . $url, $params);
         $this->checkStatus($r);
         return $this->parseResponse($r);
     }
+
 
     public function delete($url, array $data)
     {
@@ -120,19 +128,30 @@ class HttpClient {
     }
 
 
-    public function pushAsset($url, $blob) {
+    public function pushAsset($url, $file) {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
-        $params["body"]=$blob;
+        $params["multipart"] = $file;
         $r = $this->http->request("PATCH", $this->base . $url, $params);
         $this->checkStatus($r);
         return $this->parseResponse($r);
     }
+
 
     public function getAsset($url) {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $r = $this->http->request("GET", $this->base . $url, $params);
         $this->checkStatus($r);
         return $this->parseResponse($r);
+    }
+
+
+    public function createFile($name, $blob, $filename = null) {
+        $arr = [
+            "name"=>$name,
+            "contents"=>$blob
+        ];
+        if ($filename) $arr["filename"] = $filename;
+        return $arr;
     }
 }
