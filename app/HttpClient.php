@@ -100,9 +100,10 @@ class HttpClient {
         $r = $this->http->request("POST", $this->base . $url, $params);
         $this->checkStatus($r);
         return $this->parseResponse($r);
+        
     }
 
-    
+
     public function put($url, array $data)
     {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
