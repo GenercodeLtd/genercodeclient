@@ -40,12 +40,17 @@ class HttpClient {
     }
 
 
-    protected function checkStatus($r) {
-        if ($r->getStatusCode() == 401 OR $r->getStatusCode() == 403) {
-            throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() ." Authentication failed");
-        } else if ($r->getStatusCode() != 200) {
-            echo "Failure is " . $r->getBody()->getContents();
-            throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase() . $r->getBody()->getContents());
+    protected function checkStatus($url, $r) {
+        $content_type = $r->getHeader("Content-Type");
+        $code = $r->getStatusCode();
+        if ($code == 401 OR $code == 403) {
+            throw new \Exception("API failure for " . $url . ": " . $code ." Authentication failed");
+        } else if ($code != 200) {
+            if (strpos($content_type[0], "json") !== false) {
+                throw new ApiErrorException($url, $code, $r->getBody()->getContents());
+            } else {
+                throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase() . $r->getBody()->getContents());
+            }
         }
     }
 
@@ -61,13 +66,13 @@ class HttpClient {
             if ($json === null) {
                 switch (json_last_error()) {
                 case JSON_ERROR_DEPTH:
-                    throw new \Exception("API JSON failure for " . $url . ": Maximum stack depth exceeded\n\n" . $body);
+                    throw new \Exception("API JSON failure: Maximum stack depth exceeded\n\n" . $body);
                 break;
                 case JSON_ERROR_CTRL_CHAR:
-                    throw new \Exception("API JSON failure for " . $url . ": Unexpected control character found\n\n" . $body);
+                    throw new \Exception("API JSON failure: Unexpected control character found\n\n" . $body);
                 break;
                 case JSON_ERROR_SYNTAX:
-                    throw new \Exception("API JSON failure for " . $url . ": Syntax error, malformed JSON\n\n" . $body);
+                    throw new \Exception("API JSON failure: Syntax error, malformed JSON\n\n" . $body);
                 break;
             }
             }
@@ -84,7 +89,7 @@ class HttpClient {
         if ($data) $params["query"]=$data;
         $params["headers"]["accept"] = 'application/json';
         $r = $this->http->request("GET", $this->base . $url, $params);
-        $this->checkStatus($r);
+        $this->checkStatus($url, $r);
         return $this->parseResponse($r);
     }
 
@@ -98,7 +103,7 @@ class HttpClient {
             $params["multipart"] = $files;
         }
         $r = $this->http->request("POST", $this->base . $url, $params);
-        $this->checkStatus($r);
+        $this->checkStatus($url, $r);
         return $this->parseResponse($r);
         
     }
@@ -109,11 +114,9 @@ class HttpClient {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
         $params["json"]=$data;
-        if ($files) {
-            $params["multipart"] = $files;
-        }
+       
         $r = $this->http->request("PUT", $this->base . $url, $params);
-        $this->checkStatus($r);
+        $this->checkStatus($url, $r);
         return $this->parseResponse($r);
     }
 
@@ -124,7 +127,7 @@ class HttpClient {
         $params["headers"]["accept"] = 'application/json';
         $params["json"]=$data;
         $r = $this->http->request("DELETE", $this->base . $url, $params);
-        $this->checkStatus($r);
+        $this->checkStatus($url, $r);
         return $this->parseResponse($r);
     }
 
@@ -132,9 +135,9 @@ class HttpClient {
     public function pushAsset($url, $file) {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
-        $params["multipart"] = $file;
+        $params["body"] = $file;
         $r = $this->http->request("PATCH", $this->base . $url, $params);
-        $this->checkStatus($r);
+        $this->checkStatus($url, $r);
         return $this->parseResponse($r);
     }
 
@@ -142,7 +145,7 @@ class HttpClient {
     public function getAsset($url) {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $r = $this->http->request("GET", $this->base . $url, $params);
-        $this->checkStatus($r);
+        $this->checkStatus($url, $r);
         return $this->parseResponse($r);
     }
 
