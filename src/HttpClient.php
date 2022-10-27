@@ -133,7 +133,7 @@ class HttpClient {
 
 
     public function pushAsset($url, $name, $file) {
-        $postFile = $this->createFile($name, $src);
+        $postFile = $this->createFile($name, $file);
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
     
         //$params["headers"]["accept"] = 'application/json';
