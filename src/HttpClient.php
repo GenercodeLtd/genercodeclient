@@ -132,11 +132,14 @@ class HttpClient {
     }
 
 
-    public function pushAsset($url, $file) {
+    public function pushAsset($url, $name, $file) {
+        $postFile = $this->createFile($name, $src);
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
-        $params["headers"]["accept"] = 'application/json';
-        $params["body"] = $file;
-        $r = $this->http->request("PATCH", $this->base . $url, $params);
+    
+        //$params["headers"]["accept"] = 'application/json';
+        //$params["form_params"]=["name"=>$name];
+        $params["multipart"] = [$postFile];
+        $r = $this->http->request("POST", $this->base . $url, $params);
         $this->checkStatus($url, $r);
         return $this->parseResponse($r);
     }
@@ -150,12 +153,11 @@ class HttpClient {
     }
 
 
-    public function createFile($name, $blob, $filename = null) {
+    public function createFile($name, $src) {
         $arr = [
             "name"=>$name,
-            "contents"=>$blob
+            "contents"=>\GuzzleHttp\Psr7\Utils::tryFopen($src, 'r')
         ];
-        if ($filename) $arr["filename"] = $filename;
         return $arr;
     }
 }
