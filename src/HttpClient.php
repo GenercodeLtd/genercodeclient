@@ -102,7 +102,16 @@ class HttpClient {
         if ($is_multipart) {
             $marr = [];
             foreach($data as $key=>$val) {
-               $marr[] = ["name"=>$key, "contents"=>$val];
+                if (is_array($val)) {
+                    if (isset($val["contents"])) {
+                        $val["name"] = $key;
+                        $marr[] = $val;
+                    } else {
+                        $marr[] = ["name"=>$key, "contents"=>base64_encode(json_encode($val))];
+                    }
+                } else {
+                    $marr[] = ["name"=>$key, "contents"=>$val];
+                }
             }
             $params["multipart"] = $marr;
         } else {
@@ -138,13 +147,14 @@ class HttpClient {
     }
 
 
-    public function pushAsset($url, $name, $file) {
-        $postFile = $this->createFile($file);
+    public function pushAsset($url, $name, $file_name, $file) {
+        $postFile = $this->createFile($file_name, $file);
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
     
         //$params["headers"]["accept"] = 'application/json';
         //$params["form_params"]=["name"=>$name];
-        $params["multipart"] = ["name"=>$name, "contents"=>$postFile];
+        $postFile["name"] = $name;
+        $params["multipart"] = $postFile;
         $r = $this->http->request("POST", $this->base . $url, $params);
         $this->checkStatus($url, $r);
         return $this->parseResponse($r);
@@ -159,7 +169,10 @@ class HttpClient {
     }
 
 
-    public function createFile($src) {
-        return \GuzzleHttp\Psr7\Utils::tryFopen($src, 'r');
+    public function createFile($filename, $src) {
+        return [
+            "contents" => \GuzzleHttp\Psr7\Utils::tryFopen($src, 'r'),
+            "filename" => $filename
+        ];
     }
 }
