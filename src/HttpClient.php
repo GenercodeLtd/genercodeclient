@@ -47,6 +47,7 @@ class HttpClient {
             throw new \Exception("API failure for " . $url . ": " . $code ." Authentication failed");
         } else if ($code != 200) {
             if (strpos($content_type[0], "json") !== false) {
+                echo $r->getBody()->getContents();
                 throw new ApiErrorException($url, $code, $r->getBody()->getContents());
             } else {
                 throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase() . $r->getBody()->getContents());
@@ -94,13 +95,18 @@ class HttpClient {
     }
 
 
-    public function post($url, array $data, ?array $files = null)
+    public function post($url, array $data, bool $is_multipart = false)
     {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $params["headers"]["accept"] = 'application/json';
-        $params["form_params"]=$data;
-        if ($files) {
-            $params["multipart"] = $files;
+        if ($is_multipart) {
+            $marr = [];
+            foreach($data as $key=>$val) {
+               $marr[] = ["name"=>$key, "contents"=>$val];
+            }
+            $params["multipart"] = $marr;
+        } else {
+            $params["form_params"]=$data;
         }
         $r = $this->http->request("POST", $this->base . $url, $params);
         $this->checkStatus($url, $r);
@@ -133,12 +139,12 @@ class HttpClient {
 
 
     public function pushAsset($url, $name, $file) {
-        $postFile = $this->createFile($name, $file);
+        $postFile = $this->createFile($file);
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
     
         //$params["headers"]["accept"] = 'application/json';
         //$params["form_params"]=["name"=>$name];
-        $params["multipart"] = [$postFile];
+        $params["multipart"] = ["name"=>$name, "contents"=>$postFile];
         $r = $this->http->request("POST", $this->base . $url, $params);
         $this->checkStatus($url, $r);
         return $this->parseResponse($r);
@@ -153,11 +159,7 @@ class HttpClient {
     }
 
 
-    public function createFile($name, $src) {
-        $arr = [
-            "name"=>$name,
-            "contents"=>\GuzzleHttp\Psr7\Utils::tryFopen($src, 'r')
-        ];
-        return $arr;
+    public function createFile($src) {
+        return \GuzzleHttp\Psr7\Utils::tryFopen($src, 'r');
     }
 }
