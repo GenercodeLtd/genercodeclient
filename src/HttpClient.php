@@ -47,7 +47,6 @@ class HttpClient {
             throw new \Exception("API failure for " . $url . ": " . $code ." Authentication failed");
         } else if ($code != 200) {
             if (strpos($content_type[0], "json") !== false) {
-                echo $r->getBody()->getContents();
                 throw new ApiErrorException($url, $code, $r->getBody()->getContents());
             } else {
                 throw new \Exception("API failure for " . $url . ": " . $r->getStatusCode() . " " . $r->getReasonPhrase() . $r->getBody()->getContents());
@@ -59,7 +58,7 @@ class HttpClient {
     protected function parseResponse($r) {
     
         $body = $r->getBody();
-    
+       
         $content_type = $r->getHeader("Content-Type");
 
         if (strpos($content_type[0], "json") !== false) {
@@ -121,6 +120,15 @@ class HttpClient {
         $this->checkStatus($url, $r);
         return $this->parseResponse($r);
         
+    }
+
+
+    public function sendXML($url, $xml) {
+        $headers = $this->buildHeaders();
+        $headers["Content-Type"] = "text/xml; charset=UTF8";
+        $params = ["headers"=>$headers, "http_errors" => false, "body"=>$xml];
+        $r = $this->http->request("POST", $url, $params);
+       
     }
 
 
