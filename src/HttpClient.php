@@ -162,7 +162,7 @@ class HttpClient {
         //$params["headers"]["accept"] = 'application/json';
         //$params["form_params"]=["name"=>$name];
         $postFile["name"] = $field_name;
-        $params["multipart"] = $postFile;
+        $params["multipart"] = [$postFile];
         $r = $this->http->request("POST", $this->base . $url, $params);
         $this->checkStatus($url, $r);
         return $this->parseResponse($r);
