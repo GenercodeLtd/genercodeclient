@@ -173,7 +173,8 @@ class HttpClient {
         $params = ["headers"=>$this->buildHeaders(), 'http_errors' => false];
         $r = $this->http->request("GET", $this->base . $url, $params);
         $this->checkStatus($url, $r);
-        return $this->parseResponse($r);
+        $body = $r->getBody();
+        return $body->getContents();
     }
 
 
