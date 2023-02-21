@@ -8,7 +8,7 @@ class API {
     private $prefix;
     private $client;
 
-    function __constuct($client, $type = "slim", $prefix = "") {
+    function __construct($client, $type = "slim", $prefix = "") {
         $this->client = $client;
         $this->type = $type;
         $this->prefix = $prefix;
