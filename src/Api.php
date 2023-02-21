@@ -50,7 +50,7 @@ class API {
             return $this->client->delete($this->prefix . "/" . $model . "/" . $id);
         }
     }
-    
+
 
     function active($model, $id) {
         if ($this->type == "slim") {
@@ -75,6 +75,15 @@ class API {
             return $this->client->get($this->prefix . "/asset/" . $model . "/" . $field . "/" . $id);
         } else if ($this->type == "laravel") {
             return $this->client->delete($this->prefix . "/" . $model . "/" . $field . "/" . $id);
+        }
+    }
+
+
+    function queueStatus($dispatch_id) {
+        if ($this->type == "slim") {
+            return $this->client->get($this->prefix . "/dispatch/status/" . $id);
+        } else if ($this->type == "laravel") {
+            return $this->client->delete($this->prefix . "/queue/status/" . $id);
         }
     }
 }
