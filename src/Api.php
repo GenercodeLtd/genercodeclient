@@ -56,7 +56,7 @@ class API {
         if ($this->type == "slim") {
             return $this->client->get($this->prefix . "/data/" . $model . "/active", ["--id"=>$id]);
         } else if ($this->type == "laravel") {
-            return $this->client->delete($this->prefix . "/" . $model . "/" . $id);
+            return $this->client->get($this->prefix . "/" . $model . "/" . $id);
         }
     }
 
@@ -65,7 +65,7 @@ class API {
         if ($this->type == "slim") {
             return $this->client->get($this->prefix . "/reference/" . $model . "/" . $field . "/" . $id);
         } else if ($this->type == "laravel") {
-            return $this->client->delete($this->prefix . "/" . $model . "/" . $field . "/" . $id);
+            return $this->client->get($this->prefix . "/" . $model . "/" . $field . "/" . $id);
         }
     }
 
@@ -74,7 +74,7 @@ class API {
         if ($this->type == "slim") {
             return $this->client->get($this->prefix . "/asset/" . $model . "/" . $field . "/" . $id);
         } else if ($this->type == "laravel") {
-            return $this->client->delete($this->prefix . "/" . $model . "/" . $field . "/" . $id);
+            return $this->client->get($this->prefix . "/" . $model . "/" . $field . "/" . $id);
         }
     }
 
@@ -83,7 +83,7 @@ class API {
         if ($this->type == "slim") {
             return $this->client->get($this->prefix . "/dispatch/status/" . $id);
         } else if ($this->type == "laravel") {
-            return $this->client->delete($this->prefix . "/queue/status/" . $id);
+            return $this->client->get($this->prefix . "/queue/status/" . $id);
         }
     }
 }
