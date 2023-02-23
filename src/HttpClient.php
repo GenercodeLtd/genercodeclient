@@ -46,6 +46,7 @@ class HttpClient {
         if ($code == 401 OR $code == 403) {
             throw new \Exception("API failure for " . $url . ": " . $code ." Authentication failed");
         } else if ($code != 200) {
+            echo "\nError is " . $r->getBody()->getContents();
             if (strpos($content_type[0], "json") !== false) {
                 throw new ApiErrorException($url, $code, $r->getBody()->getContents());
             } else {

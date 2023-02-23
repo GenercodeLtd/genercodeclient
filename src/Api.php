@@ -72,18 +72,27 @@ class API {
 
     function getAsset($model, $field, $id) {
         if ($this->type == "slim") {
-            return $this->client->get($this->prefix . "/asset/" . $model . "/" . $field . "/" . $id);
+            return $this->client->getAsset($this->prefix . "/asset/" . $model . "/" . $field . "/" . $id);
         } else if ($this->type == "laravel") {
-            return $this->client->get($this->prefix . "/" . $model . "/" . $field . "/" . $id);
+            return $this->client->getAsset($this->prefix . "/" . $model . "/" . $field . "/" . $id);
+        }
+    }
+
+
+    function pushAsset($model, $field, $id, $src) {
+        if ($this->type == "slim") {
+            return $this->client->pushAsset($this->prefix . "/asset/" . $model . "/" . $field . "/" . $id, $field, $src);
+        } else if ($this->type == "laravel") {
+            return $this->client->pushAsset($this->prefix . "/" . $model . "/" . $field . "/" . $id, $field, $src);
         }
     }
 
 
     function queueStatus($dispatch_id) {
         if ($this->type == "slim") {
-            return $this->client->get($this->prefix . "/dispatch/status/" . $id);
+            return $this->client->get($this->prefix . "/dispatch/status/" . $dispatch_id);
         } else if ($this->type == "laravel") {
-            return $this->client->get($this->prefix . "/queue/status/" . $id);
+            return $this->client->get($this->prefix . "/queue/status/" . $dispatch_id);
         }
     }
 }
